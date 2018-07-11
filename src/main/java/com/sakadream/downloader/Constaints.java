@@ -19,7 +19,7 @@ public class Constaints {
     public static final String PATH_SEPARATOR = File.pathSeparator;
 
     // Default number of threads / parts / connections
-    public static final Integer DEFAULT_NUMBER_OF_CONNECTIONS = 10;
+    public static final Integer DEFAULT_NUMBER_OF_CONNECTIONS = 8;
 
     // start bytes / end bytes index
     public static final Integer START_BYTES_INDEX = 0;
