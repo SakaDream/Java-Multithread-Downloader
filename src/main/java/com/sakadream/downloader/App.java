@@ -23,15 +23,13 @@ public class App {
             DownloadFile downloadFile = null;
             try {
                 String urlStr = Utils.getUrl(args);
-                Config config = Utils.getConfig(args);
+                Config config = Config.getInstance();
+                Utils.setConfig(args);
+                Utils.checkDownloadsDirectory();
 
                 if (Objects.isNull(urlStr)) {
                     System.err.println("URL not found!");
                     System.exit(1);
-                }
-
-                if (Objects.isNull(config)) {
-                    System.exit(2);
                 }
 
                 URL url = new URL(urlStr);
