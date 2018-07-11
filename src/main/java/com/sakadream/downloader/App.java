@@ -39,8 +39,8 @@ public class App {
                 long fileLength = connection.getContentLengthLong();
                 String filename = Utils.getFilename(url, connection);
 
-                System.out.format("File length: %s\n", fileLength);
                 System.out.format("Filename: %s\n", filename);
+                System.out.format("File size: %s\n", Utils.humanReadableByteCount(fileLength, true));
 
                 downloadFile = new DownloadFile();
                 downloadFile.setFilename(Utils.setFilename(config.getDownloadsLocation(), filename));
