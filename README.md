@@ -15,6 +15,5 @@ A simple multithread downloader written in Java
 ## To-do
 
 - `download` command
-- `set` configuration command
-- Modifiable Configuration: Number of connections / threads, Downloads folder location
+- Number of connections / threads and Downloads folder location options for `download` command
 - Progress Monitor
