@@ -14,6 +14,5 @@ A simple multithread downloader written in Java
 
 ## To-do
 
-- `download` command
-- Number of connections / threads and Downloads folder location options for `download` command
+- Number of connections / threads and Downloads folder location options
 - Progress Monitor
