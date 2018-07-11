@@ -13,12 +13,76 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 
 /**
  * Utils
  */
 public class Utils {
+
+    public static String getUrl(String[] args) {
+        Pattern pattern = Pattern.compile(Constaints.URL_REGEX);
+        for (String arg : args) {
+            Matcher matcher = pattern.matcher(arg);
+            if (matcher.matches()) {
+                return arg;
+            }
+        }
+        return null;
+    }
+
+    public static boolean validateArgument(String[] args) throws ApplicationException {
+        for (int i = 0; i < args.length; i++) {
+            switch (args[i]) {
+            case Constaints.CONNECTIONS_ARGUMENT_SHORT:
+            case Constaints.CONNECTIONS_ARGUMENT_LONG:
+                if (i + 1 >= args.length) {
+                    throw new ApplicationException("Invalid number of connections argument's value.");
+                }
+                try {
+                    Integer.valueOf(args[i + 1]);
+                } catch (NumberFormatException nfe) {
+                    throw new ApplicationException("Invalid number of connections argument's value.");
+                }
+                break;
+            case Constaints.DOWNLOADS_LOCATION_ARGUMENT_SHORT:
+            case Constaints.DOWNLOADS_LOCATION_ARGUMENT_LONG:
+                if (i + 1 >= args.length) {
+                    throw new ApplicationException("Invalid Downloads location argument's value.");
+                }
+                File downloadsLocation = new File(args[i + 1]);
+                if (!downloadsLocation.isDirectory()) {
+                    throw new ApplicationException("Invalid Downloads location argument's value.");
+                }
+                break;
+            }
+        }
+        return true;
+    }
+
+    public static Config getConfig(String[] args) throws ApplicationException {
+        if (args.length == 1) {
+            return new Config(Constaints.DEFAULT_NUMBER_OF_CONNECTIONS, Constaints.DEFAULT_DOWNLOAD_FOLDER);
+        } else if (validateArgument(args)) {
+            Config config = new Config();
+            for (int i = 0; i < args.length; i++) {
+                switch (args[i]) {
+                case Constaints.CONNECTIONS_ARGUMENT_SHORT:
+                case Constaints.CONNECTIONS_ARGUMENT_LONG:
+                    config.setNumberOfConnections(Integer.valueOf(args[i + 1]));
+                    break;
+                case Constaints.DOWNLOADS_LOCATION_ARGUMENT_SHORT:
+                case Constaints.DOWNLOADS_LOCATION_ARGUMENT_LONG:
+                    config.setDownloadsLocation(args[i + 1]);
+                    break;
+                }
+            }
+            return config;
+        } else {
+            return null;
+        }
+    }
 
     private static String getFilename(HttpURLConnection connection) {
         Pattern pattern = Pattern.compile(
@@ -54,6 +118,24 @@ public class Utils {
                 return getFilename(connection);
             else
                 return result;
+        }
+    }
+
+    public static String setFilename(String downloadLocation, String originalFilename) {
+        String filename = FilenameUtils.getBaseName(originalFilename);
+        if (new File(downloadLocation, originalFilename).exists()) {
+            int i = 1;
+            while (true) {
+                String newFilename = new StringBuilder(filename).append('(').append(i).append(").")
+                        .append(FilenameUtils.getExtension(originalFilename)).toString();
+                if (!new File(downloadLocation, newFilename).exists()) {
+                    return newFilename;
+                } else {
+                    i++;
+                }
+            }
+        } else {
+            return originalFilename;
         }
     }
 
@@ -128,11 +210,11 @@ public class Utils {
         }
     }
 
-    public static void bulkCreateDownloadPartFiles(DownloadFile downloadFile) throws IOException {
+    public static void bulkCreateDownloadPartFiles(DownloadFile downloadFile) throws ApplicationException {
         bulkCreateDownloadPartFiles(downloadFile.getDownloadParts());
     }
 
-    public static void bulkCreateDownloadPartFiles(List<DownloadPart> downloadParts) {
+    public static void bulkCreateDownloadPartFiles(List<DownloadPart> downloadParts) throws ApplicationException {
         if (!CollectionUtils.isEmpty(downloadParts)) {
             try {
                 for (DownloadPart downloadPart : downloadParts) {
@@ -145,7 +227,7 @@ public class Utils {
                     }
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new ApplicationException("Create files failed!");
             }
         }
     }
@@ -166,10 +248,13 @@ public class Utils {
     }
 
     public static File mergeFiles(DownloadFile downloadFile, String downloadLocation) throws ApplicationException {
+        Timer timer = Timer.getInstance();
+
         List<DownloadPart> downloadParts = downloadFile.getDownloadParts();
         sortDownloadParts(downloadParts);
         File downloadDir = new File(downloadLocation);
         if (!downloadDir.isDirectory()) {
+            timer.setMergeFileCompletedTime();
             throw new ApplicationException("Invalid directory");
         } else {
             File result = null;
@@ -185,8 +270,9 @@ public class Utils {
                 fos.close();
 
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new ApplicationException("Merge files failed!");
             }
+            timer.setMergeFileCompletedTime();
             return result;
         }
     }
@@ -200,6 +286,28 @@ public class Utils {
             }
 
         });
+    }
+
+    public static String convertDurationInMilisToString(Long durationTime) {
+        Long durationTimeInSecs = durationTime / 1000;
+        return String.format("%dd %02dh %02dm %02ds", durationTimeInSecs / 86400, (durationTimeInSecs % 86400) / 3600,
+                (durationTimeInSecs % 3600) / 60, durationTimeInSecs % 60);
+    }
+
+    public static String humanReadableByteCount(long bytes, boolean si) {
+        int unit = si ? 1000 : 1024;
+        if (bytes < unit)
+            return bytes + " B";
+        int exp = (int) (Math.log(bytes) / Math.log(unit));
+        String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp - 1) + (si ? "" : "i");
+        return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
+    }
+
+    public static String humanReadableSpeed(long bytes, long timeInMilis, boolean si) {
+        long timeInSecs = timeInMilis / 1000;
+        long bytesPerSeconds = bytes / timeInSecs;
+        StringBuilder stringBuilder = new StringBuilder(humanReadableByteCount(bytesPerSeconds, si));
+        return stringBuilder.append("/s").toString();
     }
 
 }
