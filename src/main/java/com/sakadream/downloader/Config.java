@@ -1,5 +1,7 @@
 package com.sakadream.downloader;
 
+import java.util.Objects;
+
 /**
  * Config
  */
@@ -8,14 +10,16 @@ public class Config {
     private Integer numberOfConnections;
     private String downloadsLocation;
 
-    public Config() {
-        super();
+    private static Config instance = null;
+
+    protected Config() {
     }
 
-    public Config(Integer numberOfConnections, String downloadsLocation) {
-        super();
-        this.numberOfConnections = numberOfConnections;
-        this.downloadsLocation = downloadsLocation;
+    public static Config getInstance() {
+        if (Objects.isNull(instance)) {
+            instance = new Config();
+        }
+        return instance;
     }
 
     /**
