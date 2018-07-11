@@ -6,9 +6,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,6 +24,18 @@ import org.apache.commons.io.IOUtils;
  * Utils
  */
 public class Utils {
+
+    public static void checkDownloadsDirectory() throws ApplicationException {
+        Config config = Config.getInstance();
+        Path path = Paths.get(config.getDownloadsLocation());
+        if (Files.notExists(path)) {
+            try {
+                Files.createDirectories(path);
+            } catch (IOException e) {
+                throw new ApplicationException("Create default Downloads directory failed!");
+            }
+        }
+    }
 
     public static String getUrl(String[] args) {
         Pattern pattern = Pattern.compile(Constaints.URL_REGEX);
@@ -51,21 +67,18 @@ public class Utils {
                 if (i + 1 >= args.length) {
                     throw new ApplicationException("Invalid Downloads location argument's value.");
                 }
-                File downloadsLocation = new File(args[i + 1]);
-                if (!downloadsLocation.isDirectory()) {
-                    throw new ApplicationException("Invalid Downloads location argument's value.");
-                }
                 break;
             }
         }
         return true;
     }
 
-    public static Config getConfig(String[] args) throws ApplicationException {
+    public static void setConfig(String[] args) throws ApplicationException {
+        Config config = Config.getInstance();
         if (args.length == 1) {
-            return new Config(Constaints.DEFAULT_NUMBER_OF_CONNECTIONS, Constaints.DEFAULT_DOWNLOAD_FOLDER);
+            config.setNumberOfConnections(Constaints.DEFAULT_NUMBER_OF_CONNECTIONS);
+            config.setDownloadsLocation(Constaints.DEFAULT_DOWNLOAD_FOLDER);
         } else if (validateArgument(args)) {
-            Config config = new Config();
             for (int i = 0; i < args.length; i++) {
                 switch (args[i]) {
                 case Constaints.CONNECTIONS_ARGUMENT_SHORT:
@@ -78,9 +91,12 @@ public class Utils {
                     break;
                 }
             }
-            return config;
-        } else {
-            return null;
+            if (Objects.isNull(config.getNumberOfConnections())) {
+                config.setNumberOfConnections(Constaints.DEFAULT_NUMBER_OF_CONNECTIONS);
+            }
+            if (Objects.isNull(config.getDownloadsLocation())) {
+                config.setDownloadsLocation(Constaints.DEFAULT_DOWNLOAD_FOLDER);
+            }
         }
     }
 
