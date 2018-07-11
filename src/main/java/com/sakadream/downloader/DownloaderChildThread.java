@@ -16,8 +16,6 @@ import org.slf4j.LoggerFactory;
  */
 public class DownloaderChildThread extends Thread {
 
-    private static final Logger LOG = LoggerFactory.getLogger(DownloaderChildThread.class);
-
     private DownloadPart downloadPart;
     private int partNumber;
     private URL url;
@@ -132,7 +130,7 @@ public class DownloaderChildThread extends Thread {
     @Override
     public void run() {
         try {
-            LOG.info("Downloading part {}...", partNumber);
+            System.out.format("Downloading part %d", partNumber + 1);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             connection.setRequestProperty("Range",
@@ -143,9 +141,9 @@ public class DownloaderChildThread extends Thread {
             is.close();
             fos.close();
 
-            LOG.info("Download completed!");
+            System.out.format("Download part %s completed!", partNumber + 1);
         } catch (IOException ioe) {
-            LOG.info("Error when openning connection!");
+            ioe.printStackTrace();
         }
     }
 

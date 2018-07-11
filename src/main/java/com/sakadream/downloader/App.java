@@ -8,15 +8,11 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Hello world!
  *
  */
 public class App {
-    private static final Logger LOG = LoggerFactory.getLogger(App.class);
 
     public static void main(String[] args) throws InterruptedException, ApplicationException {
         if (args.length == 0) {
@@ -32,8 +28,8 @@ public class App {
                 long fileLength = connection.getContentLengthLong();
                 String filename = Utils.getFilename(url, connection);
 
-                LOG.info("File length: {}", fileLength);
-                LOG.info("Filename: {}", filename);
+                System.out.format("File length: %s\n", fileLength);
+                System.out.format("Filename: %s\n", filename);
 
                 downloadFile = new DownloadFile();
                 downloadFile.setFilename(filename);
@@ -43,7 +39,7 @@ public class App {
                 List<DownloadPart> downloadParts = new ArrayList<>();
 
                 List<List<Long>> listOfStartBytesAndEndBytes = Utils.getListOfStartBytesAndEndBytes(fileLength,
-                        Constaints.NUMBER_OF_CONNECTIONS);
+                        Constaints.DEFAULT_NUMBER_OF_CONNECTIONS);
 
                 for (int i = 0; i < listOfStartBytesAndEndBytes.size(); i++) {
                     List<Long> startBytesAndEndBytes = listOfStartBytesAndEndBytes.get(i);
@@ -58,15 +54,15 @@ public class App {
 
                 Downloader downloader = new Downloader(downloadFile);
                 downloader.startDownload();
-                File result = Utils.mergeFiles(downloadFile, Constaints.FULL_DOWNLOAD_FOLDER);
+                File result = Utils.mergeFiles(downloadFile, Constaints.DEFAULT_DOWNLOAD_FOLDER);
 
-                LOG.info("Downloaded! Download file location: {}", result.getAbsolutePath());
+                System.out.format("Downloaded! Download file location:: %s\n", result.getAbsolutePath());
             } catch (MalformedURLException mie) {
-                LOG.error("Invalid URL format!");
+                System.err.println("Invalid URL format!");
             } catch (IOException ioe) {
-                LOG.error("Error when openning connection!");
+                System.err.println("Error when openning connection!");
             } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
+                e.printStackTrace();
             } finally {
                 Utils.bulkDeleteDownloadPartFiles(downloadFile);
             }

@@ -14,15 +14,11 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Utils
  */
 public class Utils {
-
-    private static final Logger LOG = LoggerFactory.getLogger(Utils.class);
 
     private static String getFilename(HttpURLConnection connection) {
         Pattern pattern = Pattern.compile(
@@ -149,8 +145,7 @@ public class Utils {
                     }
                 }
             } catch (IOException e) {
-                LOG.error("Create files failed. Stack trace below:");
-                LOG.error(e.getMessage(), e);
+                e.printStackTrace();
             }
         }
     }
@@ -190,8 +185,7 @@ public class Utils {
                 fos.close();
 
             } catch (IOException e) {
-                LOG.error("Merge files failed. Stack trace below:");
-                LOG.error(e.getMessage(), e);
+                e.printStackTrace();
             }
             return result;
         }
