@@ -7,6 +7,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Hello world!
@@ -21,7 +22,19 @@ public class App {
         } else {
             DownloadFile downloadFile = null;
             try {
-                URL url = new URL(args[0]);
+                String urlStr = Utils.getUrl(args);
+                Config config = Utils.getConfig(args);
+
+                if (Objects.isNull(urlStr)) {
+                    System.err.println("URL not found!");
+                    System.exit(1);
+                }
+
+                if (Objects.isNull(config)) {
+                    System.exit(2);
+                }
+
+                URL url = new URL(urlStr);
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 connection.setRequestMethod("GET");
 
@@ -32,14 +45,14 @@ public class App {
                 System.out.format("Filename: %s\n", filename);
 
                 downloadFile = new DownloadFile();
-                downloadFile.setFilename(filename);
+                downloadFile.setFilename(Utils.setFilename(config.getDownloadsLocation(), filename));
                 downloadFile.setUrl(url);
                 downloadFile.setRandomString();
 
                 List<DownloadPart> downloadParts = new ArrayList<>();
 
                 List<List<Long>> listOfStartBytesAndEndBytes = Utils.getListOfStartBytesAndEndBytes(fileLength,
-                        Constaints.DEFAULT_NUMBER_OF_CONNECTIONS);
+                        config.getNumberOfConnections());
 
                 for (int i = 0; i < listOfStartBytesAndEndBytes.size(); i++) {
                     List<Long> startBytesAndEndBytes = listOfStartBytesAndEndBytes.get(i);
@@ -54,9 +67,14 @@ public class App {
 
                 Downloader downloader = new Downloader(downloadFile);
                 downloader.startDownload();
-                File result = Utils.mergeFiles(downloadFile, Constaints.DEFAULT_DOWNLOAD_FOLDER);
+                File result = Utils.mergeFiles(downloadFile, config.getDownloadsLocation());
 
-                System.out.format("Downloaded! Download file location:: %s\n", result.getAbsolutePath());
+                System.out.format("Downloaded! Download file location: %s\n", result.getAbsolutePath());
+                Timer timer = Timer.getInstance();
+                Long downloadDuration = timer.getDownloadCompletedTime() - timer.getStartTime();
+                System.out.format("Download time: %s\n", Utils.convertDurationInMilisToString(downloadDuration));
+                System.out.format("Average download speed: %s\n",
+                        Utils.humanReadableSpeed(fileLength, downloadDuration, true));
             } catch (MalformedURLException mie) {
                 System.err.println("Invalid URL format!");
             } catch (IOException ioe) {

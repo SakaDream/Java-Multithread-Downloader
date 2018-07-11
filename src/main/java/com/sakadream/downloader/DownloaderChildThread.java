@@ -8,8 +8,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * DownloaderChildThread
@@ -130,7 +128,7 @@ public class DownloaderChildThread extends Thread {
     @Override
     public void run() {
         try {
-            System.out.format("Downloading part %d", partNumber + 1);
+            System.out.format("Downloading part %d\n", partNumber + 1);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             connection.setRequestProperty("Range",
@@ -141,8 +139,9 @@ public class DownloaderChildThread extends Thread {
             is.close();
             fos.close();
 
-            System.out.format("Download part %s completed!", partNumber + 1);
+            System.out.format("Download part %s completed!\n", partNumber + 1);
         } catch (IOException ioe) {
+            System.err.printf("Download failed in part %s\n", partNumber + 1);
             ioe.printStackTrace();
         }
     }

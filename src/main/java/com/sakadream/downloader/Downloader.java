@@ -35,6 +35,9 @@ public class Downloader {
     }
 
     public boolean startDownload() {
+        Timer timer = Timer.getInstance();
+        timer.setStartTime();
+
         List<DownloadPart> downloadParts = this.downloadFile.getDownloadParts();
         for (int i = 0; i < downloadParts.size(); i++) {
             DownloadPart downloadPart = downloadParts.get(i);
@@ -52,6 +55,7 @@ public class Downloader {
                 return false;
             }
         }
+        timer.setDownloadCompletedTime();
         return true;
     }
 

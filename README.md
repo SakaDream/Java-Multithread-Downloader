@@ -2,7 +2,7 @@
 
 A simple multithread downloader written in Java
 
-![Demo Screenshot](https://puu.sh/ATXFn.png)
+![Demo Screenshot](https://puu.sh/AUsii.png)
 
 ## Build
 
@@ -14,5 +14,7 @@ A simple multithread downloader written in Java
 
 ## To-do
 
-- Number of connections / threads and Downloads folder location options
+- ~~Number of connections / threads and Downloads folder location options~~
+- `download` command
+- `set` configuration command (Number of connections, Downloads location)
 - Progress Monitor
