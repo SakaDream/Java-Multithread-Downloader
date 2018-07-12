@@ -34,4 +34,10 @@ public class Constaints {
     // Regex
     public static final String URL_REGEX = "^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]";
 
+    // Buffer size
+    public static final Integer BUFFER_SIZE = 1024;
+
+    // Progress bar
+    public static final Integer PROGRESS_BAR_MAX = 50;
+
 }
