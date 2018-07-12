@@ -29,3 +29,7 @@ Run the release: `java -jar multithread-downloader.jar <download link> <options>
 - ~~Progress Monitor~~
 - `download` command
 - `set` configuration command (Number of connections, Downloads location)
+
+## Credits
+
+- `HttpStatusCode.java` by Peter Pilgrim - http://www.xenonique.co.uk/blog/2013/11/27/my-http-response-java-enumeration-type-contracting/
