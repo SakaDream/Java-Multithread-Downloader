@@ -2,6 +2,7 @@ package com.sakadream.downloader;
 
 import java.net.URL;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.commons.lang3.RandomStringUtils;
 
@@ -11,20 +12,21 @@ import org.apache.commons.lang3.RandomStringUtils;
 public class DownloadFile {
 
     private String filename;
+    private Long fileSize;
     private String randomString;
     private URL url;
     private List<DownloadPart> downloadParts;
 
-    public DownloadFile() {
-        super();
+    private static DownloadFile instance = null;
+
+    protected DownloadFile() {
     }
 
-    public DownloadFile(String filename, URL url, List<DownloadPart> downloadParts) {
-        super();
-        this.filename = filename;
-        this.randomString = RandomStringUtils.randomAlphanumeric(16);
-        this.url = url;
-        this.downloadParts = downloadParts;
+    public static DownloadFile getInstance() {
+        if (Objects.isNull(instance)) {
+            instance = new DownloadFile();
+        }
+        return instance;
     }
 
     /**
@@ -39,6 +41,20 @@ public class DownloadFile {
      */
     public void setFilename(String filename) {
         this.filename = filename;
+    }
+
+    /**
+     * @return the fileSize
+     */
+    public Long getFileSize() {
+        return fileSize;
+    }
+
+    /**
+     * @param fileSize the fileSize to set
+     */
+    public void setFileSize(Long fileSize) {
+        this.fileSize = fileSize;
     }
 
     /**
