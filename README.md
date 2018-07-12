@@ -10,9 +10,15 @@ A simple multithread downloader written in Java
 
 ## Run
 
-`java -jar target\multithread-downloader-1.0-SNAPSHOT-jar-with-dependencies.jar <download link>`
+`java -jar target\multithread-downloader-1.0-SNAPSHOT-jar-with-dependencies.jar <download link> <options>`
 
-### Options
+
+## Download and Run Release Software
+You can download releases in this [link](https://github.com/SakaDream/Java-Multithread-Downloader/releases)
+
+Run the release: `java -jar multithread-downloader.jar <download link> <options>`
+
+## Options
 
 - `-c`, `--connections` : Number of connections / threads
 - `-l`, `--location` : Downloads location
