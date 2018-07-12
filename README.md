@@ -2,7 +2,7 @@
 
 A simple multithread downloader written in Java
 
-![Demo Screenshot](https://puu.sh/AUsii.png)
+![Demo Screenshot](https://puu.sh/AVdGT.gif)
 
 ## Build
 
