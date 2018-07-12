@@ -15,6 +15,7 @@ public class DownloadFile {
     private Long fileSize;
     private String randomString;
     private URL url;
+    private Boolean isPartialDownload;
     private List<DownloadPart> downloadParts;
 
     private static DownloadFile instance = null;
@@ -83,6 +84,20 @@ public class DownloadFile {
      */
     public void setUrl(URL url) {
         this.url = url;
+    }
+
+    /**
+     * @return the isPartialDownload
+     */
+    public Boolean getIsPartialDownload() {
+        return isPartialDownload;
+    }
+
+    /**
+     * @param isPartialDownload the isPartialDownload to set
+     */
+    public void setIsPartialDownload(Boolean isPartialDownload) {
+        this.isPartialDownload = isPartialDownload;
     }
 
     /**
