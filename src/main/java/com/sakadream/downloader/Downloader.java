@@ -2,47 +2,39 @@ package com.sakadream.downloader;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Downloader
  */
 public class Downloader {
-    private DownloadFile downloadFile;
-    private List<DownloaderChildThread> childThreads;
+    private List<DownloaderChildThread> childThreads = new ArrayList<>();
 
-    public Downloader() {
-        super();
+    private static Downloader instance = null;
+
+    protected Downloader() {
     }
 
-    public Downloader(DownloadFile downloadFile) {
-        super();
-        this.downloadFile = downloadFile;
-        this.childThreads = new ArrayList<>();
+    public static Downloader getInstance() {
+        if (Objects.isNull(instance)) {
+            instance = new Downloader();
+        }
+        return instance;
     }
 
-    /**
-     * @return the downloadFile
-     */
-    public DownloadFile getDownloadFile() {
-        return downloadFile;
-    }
-
-    /**
-     * @param downloadFile the downloadFile to set
-     */
-    public void setDownloadFile(DownloadFile downloadFile) {
-        this.downloadFile = downloadFile;
+    public List<DownloaderChildThread> getDownloaderChildThreads() {
+        return childThreads;
     }
 
     public boolean startDownload() {
         Timer timer = Timer.getInstance();
         timer.setStartTime();
 
-        List<DownloadPart> downloadParts = this.downloadFile.getDownloadParts();
+        List<DownloadPart> downloadParts = DownloadFile.getInstance().getDownloadParts();
         for (int i = 0; i < downloadParts.size(); i++) {
             DownloadPart downloadPart = downloadParts.get(i);
-            DownloaderChildThread childThread = new DownloaderChildThread(downloadPart, i, downloadFile.getUrl(),
-                    downloadFile.getRandomString());
+            DownloaderChildThread childThread = new DownloaderChildThread(downloadPart, i,
+                    DownloadFile.getInstance().getUrl(), DownloadFile.getInstance().getRandomString());
             childThreads.add(childThread);
             childThread.start();
         }
