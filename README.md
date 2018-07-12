@@ -12,6 +12,11 @@ A simple multithread downloader written in Java
 
 `java -jar target\multithread-downloader-1.0-SNAPSHOT-jar-with-dependencies.jar <download link>`
 
+### Options
+
+- `-c`, `--connections` : Number of connections / threads
+- `-l`, `--location` : Downloads location
+
 ## To-do
 
 - ~~Number of connections / threads and Downloads folder location options~~
