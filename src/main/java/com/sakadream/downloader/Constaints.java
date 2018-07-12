@@ -32,6 +32,7 @@ public class Constaints {
     public static final String DOWNLOADS_LOCATION_ARGUMENT_LONG = "--location";
 
     // Regex
+    public static final String CONTENT_DISPOSITION_REGEX = "filename=(?:([\\x21-\\x7E&&[^\\Q()<>[]@,;:\\\"/?=\\E]]++)|\"((?:(?:(?:\r\n)?[\t ])+|[^\r\"\\\\]|\\\\[\\x00-\\x7f])*)\")";
     public static final String URL_REGEX = "^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]";
 
     // Buffer size
@@ -39,5 +40,8 @@ public class Constaints {
 
     // Progress bar
     public static final Integer PROGRESS_BAR_MAX = 50;
+
+    // Headers
+    public static final String CONTENT_DISPOSITION_HEADER = "content-disposition";
 
 }

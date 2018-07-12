@@ -101,9 +101,8 @@ public class Utils {
     }
 
     private static String getFilename(HttpURLConnection connection) {
-        Pattern pattern = Pattern.compile(
-                "filename=(?:([\\x21-\\x7E&&[^\\Q()<>[]@,;:\\\"/?=\\E]]++)|\"((?:(?:(?:\r\n)?[\t ])+|[^\r\"\\\\]|\\\\[\\x00-\\x7f])*)\")");
-        Matcher matcher = pattern.matcher(connection.getHeaderField("content-disposition"));
+        Pattern pattern = Pattern.compile(Constaints.CONTENT_DISPOSITION_REGEX);
+        Matcher matcher = pattern.matcher(connection.getHeaderField(Constaints.CONTENT_DISPOSITION_HEADER));
         if (matcher.find()) {
             String result = matcher.group();
             return result.substring(result.lastIndexOf('=') + 1);
