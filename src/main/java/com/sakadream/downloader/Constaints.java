@@ -42,6 +42,8 @@ public class Constaints {
     public static final Integer PROGRESS_BAR_MAX = 50;
 
     // Headers
-    public static final String CONTENT_DISPOSITION_HEADER = "content-disposition";
+    public static final String ACCEPT_RANGES_HEADER = "Accept-Ranges";
+    public static final String CONTENT_DISPOSITION_HEADER = "Content-Disposition";
+    public static final String LOCATION_HEADER = "Location";
 
 }
