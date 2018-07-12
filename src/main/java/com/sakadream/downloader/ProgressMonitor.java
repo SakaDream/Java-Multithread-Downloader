@@ -25,10 +25,9 @@ public class ProgressMonitor extends Thread {
             try {
                 Thread.sleep(10);
                 if (Utils.isReadyToDownload()) {
-                    if (!Utils.isDownloadComplete()) {
-                        System.out.format("%s\r", Utils.printProgressBar());
-                    } else {
-                        System.out.format("%s\n", Utils.printProgressBar());
+                    System.out.format("%s\r", Utils.printProgressBar());
+                    if (Utils.isDownloadComplete()) {
+                        System.out.println();
                         break;
                     }
                 } else {
