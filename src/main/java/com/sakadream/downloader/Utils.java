@@ -354,8 +354,11 @@ public class Utils {
                 progressBarBuilder.append('#');
             }
 
-            return String.format("[%-" + Constaints.PROGRESS_BAR_MAX + "s]\t%d%%", progressBarBuilder.toString(),
-                    Math.round(percent));
+            String currentDownloadedSizeStr = humanReadableByteCount(currentDownloadedSize, true);
+            String fileSizeStr = humanReadableByteCount(fileSize, true);
+
+            return String.format("[%-" + Constaints.PROGRESS_BAR_MAX + "s]\t%d%%\t%s/%s \t ",
+                    progressBarBuilder.toString(), Math.round(percent), currentDownloadedSizeStr, fileSizeStr);
         } catch (ArithmeticException ae) {
             return String.format("[%-" + Constaints.PROGRESS_BAR_MAX + "s]\t%s%%", "", "0%");
         }
