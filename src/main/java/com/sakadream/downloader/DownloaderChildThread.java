@@ -1,13 +1,13 @@
 package com.sakadream.downloader;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-
-import org.apache.commons.io.IOUtils;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * DownloaderChildThread
@@ -19,7 +19,7 @@ public class DownloaderChildThread extends Thread {
     private URL url;
     private String filename;
     private String randomString;
-    private File file;
+    private AtomicLong downloadedFileSize = new AtomicLong(0);
 
     public DownloaderChildThread() {
         super();
@@ -32,8 +32,6 @@ public class DownloaderChildThread extends Thread {
         this.url = url;
         this.filename = downloadPart.getFilename();
         this.randomString = randomString;
-        this.file = new File(Constaints.TMP_FOLDER, downloadPart.getFilename());
-        this.file.deleteOnExit();
     }
 
     /**
@@ -106,40 +104,35 @@ public class DownloaderChildThread extends Thread {
         this.randomString = randomString;
     }
 
-    /**
-     * @return the file
-     */
-    public File getFile() {
-        return file;
-    }
-
-    /**
-     * @param file the file to set
-     */
-    public void setFile(File file) {
-        this.file = file;
-    }
-
-    public void setFile() {
-        this.file = new File(Constaints.TMP_FOLDER, downloadPart.getFilename());
-        this.file.deleteOnExit();
+    public Long getDownloadedFileSize() {
+        return downloadedFileSize.get();
     }
 
     @Override
     public void run() {
         try {
-            System.out.format("Downloading part %d\n", partNumber + 1);
+            // System.out.format("Downloading part %d\n", partNumber + 1);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             connection.setRequestProperty("Range",
                     "Bytes=" + downloadPart.getStartByte() + '-' + downloadPart.getEndByte());
-            InputStream is = connection.getInputStream();
-            FileOutputStream fos = new FileOutputStream(file);
-            IOUtils.copy(is, fos);
-            is.close();
-            fos.close();
 
-            System.out.format("Download part %s completed!\n", partNumber + 1);
+            File file = new File(Constaints.TMP_FOLDER, downloadPart.getFilename());
+            BufferedInputStream bis = new BufferedInputStream(connection.getInputStream());
+            FileOutputStream fos = new FileOutputStream(file);
+            BufferedOutputStream bos = new BufferedOutputStream(fos, Constaints.BUFFER_SIZE);
+            byte[] buffer = new byte[Constaints.BUFFER_SIZE];
+            int data = 0;
+
+            while ((data = bis.read(buffer, 0, Constaints.BUFFER_SIZE)) >= 0) {
+                downloadedFileSize.set(downloadedFileSize.get() + data);
+                bos.write(buffer, 0, data);
+            }
+
+            bos.close();
+            bis.close();
+
+            // System.out.format("Download part %s completed!\n", partNumber + 1);
         } catch (IOException ioe) {
             System.err.printf("Download failed in part %s\n", partNumber + 1);
             ioe.printStackTrace();
