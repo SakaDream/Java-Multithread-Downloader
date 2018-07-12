@@ -20,7 +20,7 @@ public class App {
             System.out.println(
                     "Please input URL, ex: java -jar target\\multithread-downloader-1.0-SNAPSHOT-jar-with-dependencies.jar https://example.com/path/file.txt");
         } else {
-            DownloadFile downloadFile = null;
+            DownloadFile downloadFile = DownloadFile.getInstance();
             try {
                 String urlStr = Utils.getUrl(args);
                 Config config = Config.getInstance();
@@ -36,21 +36,21 @@ public class App {
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 connection.setRequestMethod("GET");
 
-                long fileLength = connection.getContentLengthLong();
+                long fileSize = connection.getContentLengthLong();
                 String filename = Utils.getFilename(url, connection);
 
-                System.out.format("Filename: %s\n", filename);
-                System.out.format("File size: %s\n", Utils.humanReadableByteCount(fileLength, true));
-
-                downloadFile = new DownloadFile();
                 downloadFile.setFilename(Utils.setFilename(config.getDownloadsLocation(), filename));
+                downloadFile.setFileSize(fileSize);
                 downloadFile.setUrl(url);
                 downloadFile.setRandomString();
 
+                System.out.format("Filename: %s\n", filename);
+                System.out.format("File size: %s\n\n", Utils.humanReadableByteCount(downloadFile.getFileSize(), true));
+
                 List<DownloadPart> downloadParts = new ArrayList<>();
 
-                List<List<Long>> listOfStartBytesAndEndBytes = Utils.getListOfStartBytesAndEndBytes(fileLength,
-                        config.getNumberOfConnections());
+                List<List<Long>> listOfStartBytesAndEndBytes = Utils
+                        .getListOfStartBytesAndEndBytes(downloadFile.getFileSize(), config.getNumberOfConnections());
 
                 for (int i = 0; i < listOfStartBytesAndEndBytes.size(); i++) {
                     List<Long> startBytesAndEndBytes = listOfStartBytesAndEndBytes.get(i);
@@ -63,16 +63,16 @@ public class App {
 
                 downloadFile.setDownloadParts(downloadParts);
 
-                Downloader downloader = new Downloader(downloadFile);
-                downloader.startDownload();
-                File result = Utils.mergeFiles(downloadFile, config.getDownloadsLocation());
+                ProgressMonitor.getInstance().start();
+                Downloader.getInstance().startDownload();
+                File result = Utils.mergeFiles(config.getDownloadsLocation());
 
-                System.out.format("Downloaded! Download file location: %s\n", result.getAbsolutePath());
+                System.out.format("\nDownload complete! File location: %s\n", result.getAbsolutePath());
                 Timer timer = Timer.getInstance();
                 Long downloadDuration = timer.getDownloadCompletedTime() - timer.getStartTime();
                 System.out.format("Download time: %s\n", Utils.convertDurationInMilisToString(downloadDuration));
                 System.out.format("Average download speed: %s\n",
-                        Utils.humanReadableSpeed(fileLength, downloadDuration, true));
+                        Utils.humanReadableSpeed(downloadFile.getFileSize(), downloadDuration, true));
             } catch (MalformedURLException mie) {
                 System.err.println("Invalid URL format!");
             } catch (IOException ioe) {
@@ -80,7 +80,7 @@ public class App {
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
-                Utils.bulkDeleteDownloadPartFiles(downloadFile);
+                Utils.bulkDeleteDownloadPartFiles();
             }
         }
     }
