@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,6 +20,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Utils
@@ -100,19 +102,25 @@ public class Utils {
         }
     }
 
-    private static String getFilename(HttpURLConnection connection) {
-        Pattern pattern = Pattern.compile(Constaints.CONTENT_DISPOSITION_REGEX);
-        Matcher matcher = pattern.matcher(connection.getHeaderField(Constaints.CONTENT_DISPOSITION_HEADER));
-        if (matcher.find()) {
-            String result = matcher.group();
-            return result.substring(result.lastIndexOf('=') + 1);
+    private static String getFilenameInCdHeader(String urlStr) throws MalformedURLException, IOException {
+        HttpURLConnection connection = (HttpURLConnection) new URL(urlStr).openConnection();
+        String contentDisposition = connection.getHeaderField(Constaints.CONTENT_DISPOSITION_HEADER);
+        if (!StringUtils.isEmpty(contentDisposition)) {
+            Pattern pattern = Pattern.compile(Constaints.CONTENT_DISPOSITION_REGEX);
+            Matcher matcher = pattern.matcher(contentDisposition);
+            if (matcher.find()) {
+                String result = matcher.group();
+                return result.substring(result.lastIndexOf('=') + 1);
+            } else {
+                return null;
+            }
         } else {
             return null;
         }
     }
 
-    private static String getFilename(URL url) {
-        String filePath = url.getFile();
+    private static String getFilenameInUrl(String urlStr) throws MalformedURLException {
+        String filePath = new URL(urlStr).getFile();
         if (filePath == null) {
             return null;
         } else {
@@ -120,23 +128,66 @@ public class Utils {
         }
     }
 
-    public static String getFilename(URL url, HttpURLConnection connection) {
-        if (url == null & connection == null)
-            return null;
-        else if (url != null & connection == null)
-            return getFilename(url);
-        else if (url == null & connection != null)
-            return getFilename(connection);
-        else {
-            String result = getFilename(url);
-            if (result == null)
-                return getFilename(connection);
-            else
-                return result;
+    public static void getDownloadFileInfo(String urlStr) throws IOException, ApplicationException {
+        boolean firstLoopFlag = true;
+        String newUrlStr = urlStr;
+        URL url = new URL(urlStr);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        DownloadFile downloadFile = DownloadFile.getInstance();
+        int statusCode = connection.getResponseCode();
+        Long newFileSize = connection.getContentLengthLong();
+        while (true) {
+            if (statusCode >= 300 && statusCode < 400) {
+                if (firstLoopFlag) {
+                    newUrlStr = connection.getHeaderField(Constaints.LOCATION_HEADER);
+                    firstLoopFlag = false;
+                }
+                if (!Objects.isNull(newUrlStr)) {
+                    URL locationUrl = new URL(newUrlStr);
+                    HttpURLConnection locationConn = (HttpURLConnection) locationUrl.openConnection();
+                    locationConn.setRequestMethod("GET");
+
+                    statusCode = locationConn.getResponseCode();
+                    newFileSize = locationConn.getContentLengthLong();
+                    String location = locationConn.getHeaderField(Constaints.LOCATION_HEADER);
+
+                    if (!StringUtils.isEmpty(location)) {
+                        newUrlStr = location;
+                    }
+                    continue;
+                }
+                throw new ApplicationException("Can not get url");
+            }
+            if (statusCode == HttpStatusCode.OK.getCode()) {
+                String filename = (!StringUtils.isEmpty(getFilenameInCdHeader(newUrlStr)))
+                        ? getFilenameInCdHeader(newUrlStr)
+                        : getFilenameInUrl(newUrlStr);
+                downloadFile.setFileSize(newFileSize);
+                downloadFile.setFilename(Utils.setFilename(Config.getInstance().getDownloadsLocation(), filename));
+                downloadFile.setUrl(new URL(newUrlStr));
+                downloadFile.setRandomString();
+                downloadFile.setIsPartialDownload(canPartialDownloading());
+                break;
+            }
+            if (statusCode >= 400) {
+                throw new ApplicationException("Error during get filename and file size");
+            } else {
+                continue;
+            }
         }
     }
 
+    public static Boolean canPartialDownloading() throws IOException {
+        HttpURLConnection connection = (HttpURLConnection) DownloadFile.getInstance().getUrl().openConnection();
+        connection.setRequestProperty("Range", "bytes=" + 0 + '-' + 1024);
+        return connection.getResponseCode() == HttpStatusCode.PARTIAL_CONTENT.getCode();
+    }
+
     public static String setFilename(String downloadLocation, String originalFilename) {
+        if (StringUtils.isEmpty(originalFilename)) {
+            originalFilename = DownloadFile.getInstance().getFilename();
+        }
         String filename = FilenameUtils.getBaseName(originalFilename);
         if (new File(downloadLocation, originalFilename).exists()) {
             int i = 1;
@@ -154,9 +205,9 @@ public class Utils {
         }
     }
 
-    public static String getFilePartName(URL url, HttpURLConnection connection, String randomString, int partId) {
-        String filename = getFilename(url, connection);
-        return getFilePartName(filename, randomString, partId);
+    public static String getFilePartName(URL url, HttpURLConnection connection, String randomString, int partId)
+            throws IOException, ApplicationException {
+        return getFilePartName(DownloadFile.getInstance().getFilename(), randomString, partId);
     }
 
     public static String getFilePartName(String filename, String randomString, int partId) {
