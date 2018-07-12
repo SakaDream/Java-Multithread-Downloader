@@ -342,9 +342,9 @@ public class Utils {
     }
 
     public static String printProgressBar() {
+        long fileSize = DownloadFile.getInstance().getFileSize();
         try {
             long currentDownloadedSize = getCurrentDownloadedSize();
-            long fileSize = DownloadFile.getInstance().getFileSize();
             double percent = Math.round(((double) currentDownloadedSize / fileSize) * 100);
             long currentProgressNode = Math.round(percent / 100 * Constaints.PROGRESS_BAR_MAX);
 
@@ -354,13 +354,12 @@ public class Utils {
                 progressBarBuilder.append('#');
             }
 
-            String currentDownloadedSizeStr = humanReadableByteCount(currentDownloadedSize, true);
-            String fileSizeStr = humanReadableByteCount(fileSize, true);
-
             return String.format("[%-" + Constaints.PROGRESS_BAR_MAX + "s]\t%d%%\t%s/%s \t ",
-                    progressBarBuilder.toString(), Math.round(percent), currentDownloadedSizeStr, fileSizeStr);
+                    progressBarBuilder.toString(), Math.round(percent),
+                    humanReadableByteCount(currentDownloadedSize, true), humanReadableByteCount(fileSize, true));
         } catch (ArithmeticException ae) {
-            return String.format("[%-" + Constaints.PROGRESS_BAR_MAX + "s]\t%s%%", "", "0%");
+            return String.format("[%-" + Constaints.PROGRESS_BAR_MAX + "s]\t%s%%\t%s/%s \t ", "", "0%",
+                    humanReadableByteCount(0, true), humanReadableByteCount(fileSize, true));
         }
     }
 
