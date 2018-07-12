@@ -32,4 +32,4 @@ Run the release: `java -jar multithread-downloader.jar <download link> <options>
 
 ## Credits
 
-- `HttpStatusCode.java` by Peter Pilgrim - http://www.xenonique.co.uk/blog/2013/11/27/my-http-response-java-enumeration-type-contracting/
+- [`HttpStatusCode.java`](https://github.com/SakaDream/Java-Multithread-Downloader/blob/master/src/main/java/com/sakadream/downloader/HttpStatusCode.java) by Peter Pilgrim - http://www.xenonique.co.uk/blog/2013/11/27/my-http-response-java-enumeration-type-contracting/
