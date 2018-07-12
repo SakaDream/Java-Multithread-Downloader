@@ -114,8 +114,10 @@ public class DownloaderChildThread extends Thread {
             // System.out.format("Downloading part %d\n", partNumber + 1);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
-            connection.setRequestProperty("Range",
-                    "Bytes=" + downloadPart.getStartByte() + '-' + downloadPart.getEndByte());
+            if (DownloadFile.getInstance().getIsPartialDownload()) {
+                connection.setRequestProperty("Range",
+                        "bytes=" + downloadPart.getStartByte() + '-' + downloadPart.getEndByte());
+            }
 
             File file = new File(Constaints.TMP_FOLDER, downloadPart.getFilename());
             BufferedInputStream bis = new BufferedInputStream(connection.getInputStream());
