@@ -226,8 +226,8 @@ public class Utils {
         }
     }
 
-    public static void bulkCreateDownloadPartFiles(DownloadFile downloadFile) throws ApplicationException {
-        bulkCreateDownloadPartFiles(downloadFile.getDownloadParts());
+    public static void bulkCreateDownloadPartFiles() throws ApplicationException {
+        bulkCreateDownloadPartFiles(DownloadFile.getInstance().getDownloadParts());
     }
 
     public static void bulkCreateDownloadPartFiles(List<DownloadPart> downloadParts) throws ApplicationException {
@@ -248,8 +248,8 @@ public class Utils {
         }
     }
 
-    public static void bulkDeleteDownloadPartFiles(DownloadFile downloadFile) {
-        bulkDeleteDownloadPartFiles(downloadFile.getDownloadParts());
+    public static void bulkDeleteDownloadPartFiles() {
+        bulkDeleteDownloadPartFiles(DownloadFile.getInstance().getDownloadParts());
     }
 
     public static void bulkDeleteDownloadPartFiles(List<DownloadPart> downloadParts) {
@@ -263,8 +263,9 @@ public class Utils {
         }
     }
 
-    public static File mergeFiles(DownloadFile downloadFile, String downloadLocation) throws ApplicationException {
+    public static File mergeFiles(String downloadLocation) throws ApplicationException {
         Timer timer = Timer.getInstance();
+        DownloadFile downloadFile = DownloadFile.getInstance();
 
         List<DownloadPart> downloadParts = downloadFile.getDownloadParts();
         sortDownloadParts(downloadParts);
@@ -324,6 +325,40 @@ public class Utils {
         long bytesPerSeconds = bytes / timeInSecs;
         StringBuilder stringBuilder = new StringBuilder(humanReadableByteCount(bytesPerSeconds, si));
         return stringBuilder.append("/s").toString();
+    }
+
+    public static Long getCurrentDownloadedSize() {
+        return Downloader.getInstance().getDownloaderChildThreads().stream()
+                .mapToLong(DownloaderChildThread::getDownloadedFileSize).sum();
+    }
+
+    public static boolean isDownloadComplete() {
+        return DownloadFile.getInstance().getFileSize().longValue() == Long.valueOf(getCurrentDownloadedSize())
+                .longValue();
+    }
+
+    public static boolean isReadyToDownload() {
+        return DownloadFile.getInstance().getFileSize() > 0;
+    }
+
+    public static String printProgressBar() {
+        try {
+            long currentDownloadedSize = getCurrentDownloadedSize();
+            long fileSize = DownloadFile.getInstance().getFileSize();
+            double percent = Math.round(((double) currentDownloadedSize / fileSize) * 100);
+            long currentProgressNode = Math.round(percent / 100 * Constaints.PROGRESS_BAR_MAX);
+
+            StringBuilder progressBarBuilder = new StringBuilder();
+
+            for (long i = 0; i < currentProgressNode; i++) {
+                progressBarBuilder.append('#');
+            }
+
+            return String.format("[%-" + Constaints.PROGRESS_BAR_MAX + "s]\t%d%%", progressBarBuilder.toString(),
+                    Math.round(percent));
+        } catch (ArithmeticException ae) {
+            return String.format("[%-" + Constaints.PROGRESS_BAR_MAX + "s]\t%s%%", "", "0%");
+        }
     }
 
 }
