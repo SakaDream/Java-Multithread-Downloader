@@ -4,6 +4,8 @@
 
 package com.sakadream.downloader;
 
+import java.util.Arrays;
+
 /**
  * Implementation type HttpStatusCode
  *
@@ -83,6 +85,10 @@ public enum HttpStatusCode {
      */
     public String getDesc() {
         return desc;
+    }
+
+    public static HttpStatusCode findHttpStatusCode(int statusCode) {
+        return Arrays.stream(values()).filter(s -> s.getCode() == statusCode).findFirst().get();
     }
 
 }
