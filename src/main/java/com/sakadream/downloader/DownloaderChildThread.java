@@ -131,6 +131,7 @@ public class DownloaderChildThread extends Thread {
                 bos.write(buffer, 0, data);
             }
 
+            bos.flush();
             bos.close();
             bis.close();
 
