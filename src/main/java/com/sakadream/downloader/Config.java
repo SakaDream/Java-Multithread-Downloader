@@ -9,6 +9,7 @@ public class Config {
 
     private Integer numberOfConnections;
     private String downloadsLocation;
+    private Boolean useSystemProxy;
 
     private static Config instance = null;
 
@@ -48,6 +49,20 @@ public class Config {
      */
     public void setDownloadsLocation(String downloadsLocation) {
         this.downloadsLocation = downloadsLocation;
+    }
+
+    /**
+     * @return the useSystemProxy
+     */
+    public Boolean getUseSystemProxy() {
+        return useSystemProxy;
+    }
+
+    /**
+     * @param useSystemProxy the useSystemProxy to set
+     */
+    public void setUseSystemProxy(Boolean useSystemProxy) {
+        this.useSystemProxy = useSystemProxy;
     }
 
 }
