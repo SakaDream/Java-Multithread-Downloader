@@ -80,6 +80,7 @@ public class Utils {
         if (args.length == 1) {
             config.setNumberOfConnections(Constaints.DEFAULT_NUMBER_OF_CONNECTIONS);
             config.setDownloadsLocation(Constaints.DEFAULT_DOWNLOAD_FOLDER);
+            config.setUseSystemProxy(Constaints.DEFAULT_USE_SYSTEM_PROXY);
         } else if (validateArgument(args)) {
             for (int i = 0; i < args.length; i++) {
                 switch (args[i]) {
@@ -91,13 +92,20 @@ public class Utils {
                 case Constaints.DOWNLOADS_LOCATION_ARGUMENT_LONG:
                     config.setDownloadsLocation(args[i + 1]);
                     break;
+                case Constaints.USE_SYSTEM_PROXY_ARGUMENT_SHORT:
+                case Constaints.USE_SYSTEM_PROXY_ARGUMENT_LONG:
+                    config.setUseSystemProxy(Boolean.valueOf(args[i + 1]));
+                    break;
                 }
             }
             if (Objects.isNull(config.getNumberOfConnections())) {
                 config.setNumberOfConnections(Constaints.DEFAULT_NUMBER_OF_CONNECTIONS);
             }
-            if (Objects.isNull(config.getDownloadsLocation())) {
+            if (StringUtils.isEmpty(config.getDownloadsLocation())) {
                 config.setDownloadsLocation(Constaints.DEFAULT_DOWNLOAD_FOLDER);
+            }
+            if (Objects.isNull(config.getUseSystemProxy())) {
+                config.setUseSystemProxy(Constaints.DEFAULT_USE_SYSTEM_PROXY);
             }
         }
     }
@@ -171,7 +179,9 @@ public class Utils {
                 break;
             }
             if (statusCode >= 400) {
-                throw new ApplicationException("Error during get filename and file size");
+                throw new ApplicationException(
+                        String.format("Error during get filename and file size! Response: %d - %s", statusCode,
+                                HttpStatusCode.findHttpStatusCode(statusCode)));
             } else {
                 continue;
             }
@@ -383,8 +393,7 @@ public class Utils {
     }
 
     public static boolean isDownloadComplete() {
-        return DownloadFile.getInstance().getFileSize().longValue() == Long.valueOf(getCurrentDownloadedSize())
-                .longValue();
+        return DownloadFile.getInstance().getFileSize().longValue() == getCurrentDownloadedSize().longValue();
     }
 
     public static boolean isReadyToDownload() {
@@ -406,10 +415,10 @@ public class Utils {
 
             return String.format("[%-" + Constaints.PROGRESS_BAR_MAX + "s]\t%d%%\t%s/%s \t ",
                     progressBarBuilder.toString(), Math.round(percent),
-                    humanReadableByteCount(currentDownloadedSize, true), humanReadableByteCount(fileSize, true));
+                    humanReadableByteCount(currentDownloadedSize, false), humanReadableByteCount(fileSize, false));
         } catch (ArithmeticException ae) {
             return String.format("[%-" + Constaints.PROGRESS_BAR_MAX + "s]\t%s%%\t%s/%s \t ", "", "0%",
-                    humanReadableByteCount(0, true), humanReadableByteCount(fileSize, true));
+                    humanReadableByteCount(0, false), humanReadableByteCount(fileSize, false));
         }
     }
 
