@@ -15,6 +15,13 @@ import java.util.Objects;
 public class App {
 
     public static void main(String[] args) throws InterruptedException, ApplicationException {
+
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                Utils.bulkDeleteDownloadPartFiles();
+            }
+        });
+
         if (args.length == 0) {
             System.out.println(
                     "Please input URL, ex: java -jar target\\multithread-downloader-1.0-SNAPSHOT-jar-with-dependencies.jar https://example.com/path/file.txt");
@@ -32,11 +39,13 @@ public class App {
                     System.exit(1);
                 }
 
+                System.setProperty("java.net.useSystemProxies", config.getUseSystemProxy().toString());
+
                 Utils.getDownloadFileInfo(urlStr);
                 String filename = DownloadFile.getInstance().getFilename();
 
                 System.out.format("Filename: %s\n", filename);
-                System.out.format("File size: %s\n", Utils.humanReadableByteCount(downloadFile.getFileSize(), true));
+                System.out.format("File size: %s\n", Utils.humanReadableByteCount(downloadFile.getFileSize(), false));
 
                 boolean isPartialDownload = Utils.canPartialDownloading();
                 System.out.format("Partial Download? %s\n", isPartialDownload);
@@ -68,25 +77,27 @@ public class App {
 
                 ProgressMonitor.getInstance().start();
                 Downloader.getInstance().startDownload();
-                File result = Utils.mergeFiles(config.getDownloadsLocation());
 
-                System.out.println();
+                if (Utils.isDownloadComplete()) {
+                    File result = Utils.mergeFiles(config.getDownloadsLocation());
 
-                System.out.format("Download complete! File location: %s\n", result.getAbsolutePath());
-                Timer timer = Timer.getInstance();
-                Long downloadDuration = timer.getDownloadCompletedTime() - timer.getStartTime();
-                System.out.format("Download time: %s\n", Utils.convertDurationInMilisToString(downloadDuration));
-                System.out.format("Average download speed: %s\n",
-                        Utils.humanReadableSpeed(downloadFile.getFileSize(), downloadDuration, true));
+                    System.out.println();
+
+                    System.out.format("Download complete! File location: %s\n", result.getAbsolutePath());
+                    Timer timer = Timer.getInstance();
+                    Long downloadDuration = timer.getDownloadCompletedTime() - timer.getStartTime();
+                    System.out.format("Download time: %s\n", Utils.convertDurationInMilisToString(downloadDuration));
+                    System.out.format("Average download speed: %s\n",
+                            Utils.humanReadableSpeed(downloadFile.getFileSize(), downloadDuration, false));
+                } else {
+                    System.out.println("Canceled");
+                }
             } catch (MalformedURLException mie) {
-                mie.printStackTrace();
                 System.err.println("Invalid URL format!");
+                mie.printStackTrace();
             } catch (IOException ioe) {
                 System.err.println("Error when openning connection!");
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                Utils.bulkDeleteDownloadPartFiles();
+                ioe.printStackTrace();
             }
         }
     }
