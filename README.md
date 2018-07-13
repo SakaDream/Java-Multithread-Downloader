@@ -20,8 +20,9 @@ Run the release: `java -jar multithread-downloader.jar <download link> <options>
 
 ## Options
 
-- `-c`, `--connections` : Number of connections / threads
+- `-c`, `--connections` : Number of connections / threads. Default is 8
 - `-l`, `--location` : Downloads location
+- `-p`, `--useSystemProxy` : Can application use system proxy? Default is false
 
 ## To-do
 
