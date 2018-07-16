@@ -64,6 +64,10 @@ public class Utils {
     public static boolean validateArgument(String[] args) throws ApplicationException {
         for (int i = 0; i < args.length; i++) {
             switch (args[i]) {
+            case Constaints.HELP_ARGUMENT_SHORT:
+            case Constaints.HELP_ARGUMENT_LONG:
+                showHelp();
+                break;
             case Constaints.CONNECTIONS_ARGUMENT_SHORT:
             case Constaints.CONNECTIONS_ARGUMENT_LONG:
                 if (i + 1 >= args.length) {
@@ -81,6 +85,9 @@ public class Utils {
                     throw new ApplicationException("Invalid Downloads location argument's value.");
                 }
                 break;
+            default:
+                System.err.println("Invalid options!");
+                showHelp();
             }
         }
         return true;
@@ -88,11 +95,11 @@ public class Utils {
 
     public static void setConfig(String[] args) throws ApplicationException {
         Config config = Config.getInstance();
-        if (args.length == 1) {
+        if (args.length == 1 && validateArgument(args)) {
             config.setNumberOfConnections(Constaints.DEFAULT_NUMBER_OF_CONNECTIONS);
             config.setDownloadsLocation(Constaints.DEFAULT_DOWNLOAD_FOLDER);
             config.setUseSystemProxy(Constaints.DEFAULT_USE_SYSTEM_PROXY);
-        } else if (validateArgument(args)) {
+        } else if (args.length > 1 && validateArgument(args)) {
             for (int i = 0; i < args.length; i++) {
                 switch (args[i]) {
                 case Constaints.CONNECTIONS_ARGUMENT_SHORT:
@@ -475,6 +482,30 @@ public class Utils {
             // Install the all-trusting host verifier
             HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
         }
+    }
+
+    public static void showHelp() {
+        System.out.println();
+        System.out.println("Java Multithread Downloader");
+        System.out.println("Version 1.0");
+        System.out.println("Author: SakaDream");
+        System.out.println("------------------------------");
+        System.out.println("Machine Information:");
+        System.out.println(String.format("OS: %s %s", System.getProperty("os.name"), System.getProperty("os.arch")));
+        System.out.println(String.format("Java version: %s", System.getProperty("java.version")));
+        System.out.println("------------------------------");
+        System.out.println("Command:");
+        System.out.println(
+                "java -jar multithread-downloader-1.0-SNAPSHOT-jar-with-dependencies.jar <download link> [<options>]");
+        System.out.println("------------------------------");
+        System.out.println("Options:");
+        System.out.println("-c, --connections: Number of connections / threads. Default is 8");
+        System.out.println("-l, --location: Downloads location");
+        System.out.println("-p, --useSystemProxy: Add this option to enable system proxy");
+        System.out.println(
+                "-v, --noValidateCertificate: Add this option to turn off Cerfiticate Validation in https connection");
+        System.out.println("-h, --help: Show this help");
+        System.exit(0);
     }
 
 }
