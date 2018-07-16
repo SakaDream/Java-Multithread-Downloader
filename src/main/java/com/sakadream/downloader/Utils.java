@@ -10,12 +10,23 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -94,8 +105,11 @@ public class Utils {
                     break;
                 case Constaints.USE_SYSTEM_PROXY_ARGUMENT_SHORT:
                 case Constaints.USE_SYSTEM_PROXY_ARGUMENT_LONG:
-                    config.setUseSystemProxy(Boolean.valueOf(args[i + 1]));
+                    config.setUseSystemProxy(true);
                     break;
+                case Constaints.DISABLE_CERTIFICATE_VALIDATION_ARGUMENT_SHORT:
+                case Constaints.DISABLE_CERTIFICATE_VALIDATION_ARGUMENT_LONG:
+                    config.setEnableCertificateValidation(false);
                 }
             }
             if (Objects.isNull(config.getNumberOfConnections())) {
@@ -106,6 +120,9 @@ public class Utils {
             }
             if (Objects.isNull(config.getUseSystemProxy())) {
                 config.setUseSystemProxy(Constaints.DEFAULT_USE_SYSTEM_PROXY);
+            }
+            if (Objects.isNull(config.getEnableCertificateValidation())) {
+                config.setEnableCertificateValidation(Constaints.DEFAULT_USE_SYSTEM_PROXY);
             }
         }
     }
@@ -419,6 +436,44 @@ public class Utils {
         } catch (ArithmeticException ae) {
             return String.format("[%-" + Constaints.PROGRESS_BAR_MAX + "s]\t%s%%\t%s/%s \t ", "", "0%",
                     humanReadableByteCount(0, false), humanReadableByteCount(fileSize, false));
+        }
+    }
+
+    public static void turnOffCertificateValidation() throws KeyManagementException, NoSuchAlgorithmException {
+        // Create a trust manager that does not validate certificate chains
+        if (!Config.getInstance().getEnableCertificateValidation()) {
+            TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+
+                @Override
+                public X509Certificate[] getAcceptedIssuers() {
+                    return null;
+                }
+
+                @Override
+                public void checkServerTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
+
+                }
+
+                @Override
+                public void checkClientTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
+
+                }
+            } };
+
+            // Install the all-trusting trust manager
+            SSLContext sc = SSLContext.getInstance("SSL");
+            sc.init(null, trustAllCerts, new java.security.SecureRandom());
+            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+
+            // Create all-trusting host name verifier
+            HostnameVerifier allHostsValid = new HostnameVerifier() {
+                public boolean verify(String hostname, SSLSession session) {
+                    return true;
+                }
+            };
+
+            // Install the all-trusting host verifier
+            HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
         }
     }
 
