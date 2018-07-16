@@ -10,6 +10,7 @@ public class Config {
     private Integer numberOfConnections;
     private String downloadsLocation;
     private Boolean useSystemProxy;
+    private Boolean enableCertificateValidation;
 
     private static Config instance = null;
 
@@ -63,6 +64,20 @@ public class Config {
      */
     public void setUseSystemProxy(Boolean useSystemProxy) {
         this.useSystemProxy = useSystemProxy;
+    }
+
+    /**
+     * @return the enableCertificateValidation
+     */
+    public Boolean getEnableCertificateValidation() {
+        return enableCertificateValidation;
+    }
+
+    /**
+     * @param enableCertificateValidation the enableCertificateValidation to set
+     */
+    public void setEnableCertificateValidation(Boolean enableCertificateValidation) {
+        this.enableCertificateValidation = enableCertificateValidation;
     }
 
 }
