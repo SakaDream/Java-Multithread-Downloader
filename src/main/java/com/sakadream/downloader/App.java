@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -14,7 +16,8 @@ import java.util.Objects;
  */
 public class App {
 
-    public static void main(String[] args) throws InterruptedException, ApplicationException {
+    public static void main(String[] args)
+            throws InterruptedException, ApplicationException, KeyManagementException, NoSuchAlgorithmException {
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
@@ -33,6 +36,7 @@ public class App {
                 Config config = Config.getInstance();
                 Utils.setConfig(args);
                 Utils.checkDownloadsDirectory();
+                Utils.turnOffCertificateValidation();
 
                 if (Objects.isNull(urlStr)) {
                     System.err.println("URL not found!");
