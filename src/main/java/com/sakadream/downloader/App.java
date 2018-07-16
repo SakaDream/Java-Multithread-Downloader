@@ -19,15 +19,8 @@ public class App {
     public static void main(String[] args)
             throws InterruptedException, ApplicationException, KeyManagementException, NoSuchAlgorithmException {
 
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run() {
-                Utils.bulkDeleteDownloadPartFiles();
-            }
-        });
-
         if (args.length == 0) {
-            System.out.println(
-                    "Please input URL, ex: java -jar target\\multithread-downloader-1.0-SNAPSHOT-jar-with-dependencies.jar https://example.com/path/file.txt");
+            Utils.showHelp();
         } else {
             DownloadFile downloadFile = DownloadFile.getInstance();
             HttpURLConnection.setFollowRedirects(false);
@@ -102,6 +95,8 @@ public class App {
             } catch (IOException ioe) {
                 System.err.println("Error when openning connection!");
                 ioe.printStackTrace();
+            } finally {
+                Utils.bulkDeleteDownloadPartFiles();
             }
         }
     }
