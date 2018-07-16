@@ -21,6 +21,7 @@ public class Constaints {
     public static final Integer DEFAULT_NUMBER_OF_CONNECTIONS = 8;
     public static final String DEFAULT_DOWNLOAD_FOLDER = Paths.get(HOME_FOLDER, DOWNLOADS).toString();
     public static final Boolean DEFAULT_USE_SYSTEM_PROXY = false;
+    public static final Boolean DEFAULT_CERTIFICATE_VALIDATION = true;
 
     // start bytes / end bytes index
     public static final Integer START_BYTES_INDEX = 0;
@@ -33,6 +34,8 @@ public class Constaints {
     public static final String DOWNLOADS_LOCATION_ARGUMENT_LONG = "--location";
     public static final String USE_SYSTEM_PROXY_ARGUMENT_SHORT = "-p";
     public static final String USE_SYSTEM_PROXY_ARGUMENT_LONG = "--useSystemProxy";
+    public static final String DISABLE_CERTIFICATE_VALIDATION_ARGUMENT_SHORT = "-v";
+    public static final String DISABLE_CERTIFICATE_VALIDATION_ARGUMENT_LONG = "--noValidateCertificate";
 
     // Regex
     public static final String CONTENT_DISPOSITION_REGEX = "filename=(?:([\\x21-\\x7E&&[^\\Q()<>[]@,;:\\\"/?=\\E]]++)|\"((?:(?:(?:\r\n)?[\t ])+|[^\r\"\\\\]|\\\\[\\x00-\\x7f])*)\")";
