@@ -36,6 +36,8 @@ public class Constaints {
     public static final String USE_SYSTEM_PROXY_ARGUMENT_LONG = "--useSystemProxy";
     public static final String DISABLE_CERTIFICATE_VALIDATION_ARGUMENT_SHORT = "-v";
     public static final String DISABLE_CERTIFICATE_VALIDATION_ARGUMENT_LONG = "--noValidateCertificate";
+    public static final String HELP_ARGUMENT_SHORT = "-h";
+    public static final String HELP_ARGUMENT_LONG = "--help";
 
     // Regex
     public static final String CONTENT_DISPOSITION_REGEX = "filename=(?:([\\x21-\\x7E&&[^\\Q()<>[]@,;:\\\"/?=\\E]]++)|\"((?:(?:(?:\r\n)?[\t ])+|[^\r\"\\\\]|\\\\[\\x00-\\x7f])*)\")";
