@@ -114,6 +114,7 @@ public class DownloaderChildThread extends Thread {
             // System.out.format("Downloading part %d\n", partNumber + 1);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
+            connection.setRequestProperty("User-Agent", Config.getInstance().getUserAgent());
             if (DownloadFile.getInstance().getIsPartialDownload()) {
                 connection.setRequestProperty("Range",
                         "bytes=" + downloadPart.getStartByte() + '-' + downloadPart.getEndByte());
