@@ -29,13 +29,16 @@ public class App {
                 String urlStr = Utils.getUrl(args);
                 Config config = Config.getInstance();
                 Utils.setConfig(args);
-                Utils.setProxyConfiguration();
                 Utils.checkDownloadsDirectory();
                 Utils.turnOffCertificateValidation();
 
                 if (Objects.isNull(urlStr)) {
                     System.err.println("URL not found!");
                     System.exit(1);
+                }
+
+                if (config.getUseSystemProxy()) {
+                    Utils.setProxyConfiguration();
                 }
 
                 Utils.getDownloadFileInfo(urlStr);
