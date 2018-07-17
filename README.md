@@ -23,7 +23,7 @@ Run the release: `java -jar multithread-downloader.jar <download link> <options>
 - `-c`, `--connections` : Number of connections / threads. Default is 8
 - `-l`, `--location` : Downloads location
 - `-p`, `--useSystemProxy` : Add this option to enable system proxy
-- `-v`, `--noValidateCertificate` : Add this option to turn off Cerfiticate Validation in https connection
+- `-v`, `--noValidateCertificate` : Add this option to turn off Certificate Validation in https connection
 - `-h`, `--help`: Show help
 
 ## To-do
