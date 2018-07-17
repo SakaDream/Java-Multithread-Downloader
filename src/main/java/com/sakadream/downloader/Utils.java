@@ -4,8 +4,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.Authenticator;
 import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
+import java.net.PasswordAuthentication;
+import java.net.Proxy;
+import java.net.ProxySelector;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -61,7 +69,13 @@ public class Utils {
         return null;
     }
 
-    public static boolean validateArgument(String[] args) throws ApplicationException {
+    public static String getUrl(String arg) {
+        Pattern pattern = Pattern.compile(Constaints.URL_REGEX);
+        Matcher matcher = pattern.matcher(arg);
+        return (matcher.matches()) ? arg : null;
+    }
+
+    public static boolean validateArgument(String[] args) throws ApplicationException, URISyntaxException {
         for (int i = 0; i < args.length; i++) {
             switch (args[i]) {
             case Constaints.HELP_ARGUMENT_SHORT:
@@ -85,21 +99,24 @@ public class Utils {
                     throw new ApplicationException("Invalid Downloads location argument's value.");
                 }
                 break;
+            case Constaints.USE_SYSTEM_PROXY_ARGUMENT_SHORT:
+            case Constaints.USE_SYSTEM_PROXY_ARGUMENT_LONG:
+            case Constaints.DISABLE_CERTIFICATE_VALIDATION_ARGUMENT_SHORT:
+            case Constaints.DISABLE_CERTIFICATE_VALIDATION_ARGUMENT_LONG:
+                break;
             default:
-                System.err.println("Invalid options!");
-                showHelp();
+                if (StringUtils.isEmpty(getUrl(args[i]))) {
+                    System.err.println("Invalid options!");
+                    showHelp();
+                }
             }
         }
         return true;
     }
 
-    public static void setConfig(String[] args) throws ApplicationException {
+    public static void setConfig(String[] args) throws ApplicationException, NumberFormatException, URISyntaxException {
         Config config = Config.getInstance();
-        if (args.length == 1 && validateArgument(args)) {
-            config.setNumberOfConnections(Constaints.DEFAULT_NUMBER_OF_CONNECTIONS);
-            config.setDownloadsLocation(Constaints.DEFAULT_DOWNLOAD_FOLDER);
-            config.setUseSystemProxy(Constaints.DEFAULT_USE_SYSTEM_PROXY);
-        } else if (args.length > 1 && validateArgument(args)) {
+        if (validateArgument(args)) {
             for (int i = 0; i < args.length; i++) {
                 switch (args[i]) {
                 case Constaints.CONNECTIONS_ARGUMENT_SHORT:
@@ -119,19 +136,20 @@ public class Utils {
                     config.setEnableCertificateValidation(false);
                 }
             }
-            if (Objects.isNull(config.getNumberOfConnections())) {
-                config.setNumberOfConnections(Constaints.DEFAULT_NUMBER_OF_CONNECTIONS);
-            }
-            if (StringUtils.isEmpty(config.getDownloadsLocation())) {
-                config.setDownloadsLocation(Constaints.DEFAULT_DOWNLOAD_FOLDER);
-            }
-            if (Objects.isNull(config.getUseSystemProxy())) {
-                config.setUseSystemProxy(Constaints.DEFAULT_USE_SYSTEM_PROXY);
-            }
-            if (Objects.isNull(config.getEnableCertificateValidation())) {
-                config.setEnableCertificateValidation(Constaints.DEFAULT_USE_SYSTEM_PROXY);
-            }
         }
+        if (Objects.isNull(config.getNumberOfConnections())) {
+            config.setNumberOfConnections(Constaints.DEFAULT_NUMBER_OF_CONNECTIONS);
+        }
+        if (StringUtils.isEmpty(config.getDownloadsLocation())) {
+            config.setDownloadsLocation(Constaints.DEFAULT_DOWNLOAD_FOLDER);
+        }
+        if (Objects.isNull(config.getUseSystemProxy())) {
+            config.setUseSystemProxy(Constaints.DEFAULT_USE_SYSTEM_PROXY);
+        }
+        if (Objects.isNull(config.getEnableCertificateValidation())) {
+            config.setEnableCertificateValidation(Constaints.DEFAULT_CERTIFICATE_VALIDATION);
+        }
+        config.setUserAgent();
     }
 
     private static String getFilenameInCdHeader(String urlStr) throws MalformedURLException, IOException {
@@ -166,6 +184,7 @@ public class Utils {
         URL url = new URL(urlStr);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
+        connection.setRequestProperty("User-Agent", Config.getInstance().getUserAgent());
         DownloadFile downloadFile = DownloadFile.getInstance();
         int statusCode = connection.getResponseCode();
         Long newFileSize = connection.getContentLengthLong();
@@ -179,6 +198,7 @@ public class Utils {
                     URL locationUrl = new URL(newUrlStr);
                     HttpURLConnection locationConn = (HttpURLConnection) locationUrl.openConnection();
                     locationConn.setRequestMethod("GET");
+                    locationConn.setRequestProperty("User-Agent", Config.getInstance().getUserAgent());
 
                     statusCode = locationConn.getResponseCode();
                     newFileSize = locationConn.getContentLengthLong();
@@ -202,6 +222,30 @@ public class Utils {
                 downloadFile.setIsPartialDownload(canPartialDownloading());
                 break;
             }
+            // Handle 407 - Proxy Authentication Required, but doesn't working
+            /**
+             * if (statusCode == HttpStatusCode.PROXY_AUTHENTICATION_REQUIRED.getCode()) {
+             * System.out.println(HttpStatusCode.PROXY_AUTHENTICATION_REQUIRED.getDesc());
+             * inputProxyUsernameAndPassword();
+             * 
+             * Authenticator.setDefault(new Authenticator() {
+             * 
+             * @Override protected PasswordAuthentication getPasswordAuthentication() {
+             *           String host = System.getProperty("http.proxyHost"); String port =
+             *           System.getProperty("http.proxyPort"); if
+             *           (getRequestingHost().equalsIgnoreCase(host)) { if
+             *           (Integer.parseInt(port) == getRequestingPort()) { return new
+             *           PasswordAuthentication(Config.getInstance().getProxyUsername(),
+             *           Config.getInstance().getProxyPassword().toCharArray()); } } return
+             *           null; } });
+             * 
+             *           System.setProperty("http.proxyUser",
+             *           Config.getInstance().getProxyUsername());
+             *           System.setProperty("http.proxyPassword",
+             *           Config.getInstance().getProxyPassword());
+             * 
+             *           continue; }
+             **/
             if (statusCode >= 400) {
                 throw new ApplicationException(
                         String.format("Error during get filename and file size! Response: %d - %s", statusCode,
@@ -210,6 +254,36 @@ public class Utils {
                 continue;
             }
         }
+    }
+
+    public static void setProxyConfiguration() throws URISyntaxException {
+        System.setProperty("java.net.useSystemProxies", "true");
+        Optional<Proxy> optionalProxy = ProxySelector.getDefault().select(new URI("https://google.com")).stream()
+                .findFirst();
+        if (optionalProxy.isPresent()) {
+            Proxy proxy = optionalProxy.get();
+            InetSocketAddress addr = (InetSocketAddress) proxy.address();
+            System.setProperty("http.proxyHost", addr.getHostName());
+            System.setProperty("http.proxyPort", String.valueOf(addr.getPort()));
+        }
+        System.setProperty("java.net.useSystemProxies", "false");
+    }
+
+    public static void inputProxyUsernameAndPassword() throws IOException {
+        int nl = System.lineSeparator().length();
+        byte[] line = new byte[80];
+
+        System.out.println("Please input your proxy username and password!");
+        System.out.print("Username: ");
+        int input = System.in.read(line);
+        String usernameInput = new String(line, 0, input - nl);
+
+        System.out.print("Password: ");
+        String passwordInput = new String(System.console().readPassword());
+
+        Config config = Config.getInstance();
+        config.setProxyUsername(usernameInput);
+        config.setProxyPassword(passwordInput);
     }
 
     public static Boolean canPartialDownloading() throws IOException {
@@ -484,7 +558,7 @@ public class Utils {
         }
     }
 
-    public static void showHelp() {
+    public static void showHelp() throws URISyntaxException {
         System.out.println();
         System.out.println("Java Multithread Downloader");
         System.out.println("Version 1.0");
@@ -493,6 +567,18 @@ public class Utils {
         System.out.println("Machine Information:");
         System.out.println(String.format("OS: %s %s", System.getProperty("os.name"), System.getProperty("os.arch")));
         System.out.println(String.format("Java version: %s", System.getProperty("java.version")));
+        System.out.println("------------------------------");
+        System.out.println("System Information");
+        Utils.setProxyConfiguration();
+        if (!StringUtils.isEmpty(System.getProperty("http.proxyHost"))
+                && !StringUtils.isEmpty(System.getProperty("http.proxyPort"))) {
+            System.out.println(String.format("Proxy: %s:%s", System.getProperty("http.proxyHost"),
+                    System.getProperty("http.proxyPort")));
+        } else {
+            System.out.println("No Proxy found");
+        }
+        Config.getInstance().setUserAgent();
+        System.out.println(String.format("User Agent: %s", Config.getInstance().getUserAgent()));
         System.out.println("------------------------------");
         System.out.println("Command:");
         System.out.println(
