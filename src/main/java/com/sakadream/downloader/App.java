@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -16,8 +17,8 @@ import java.util.Objects;
  */
 public class App {
 
-    public static void main(String[] args)
-            throws InterruptedException, ApplicationException, KeyManagementException, NoSuchAlgorithmException {
+    public static void main(String[] args) throws InterruptedException, ApplicationException, KeyManagementException,
+            NoSuchAlgorithmException, URISyntaxException {
 
         if (args.length == 0) {
             Utils.showHelp();
@@ -28,6 +29,7 @@ public class App {
                 String urlStr = Utils.getUrl(args);
                 Config config = Config.getInstance();
                 Utils.setConfig(args);
+                Utils.setProxyConfiguration();
                 Utils.checkDownloadsDirectory();
                 Utils.turnOffCertificateValidation();
 
@@ -35,8 +37,6 @@ public class App {
                     System.err.println("URL not found!");
                     System.exit(1);
                 }
-
-                System.setProperty("java.net.useSystemProxies", config.getUseSystemProxy().toString());
 
                 Utils.getDownloadFileInfo(urlStr);
                 String filename = DownloadFile.getInstance().getFilename();
