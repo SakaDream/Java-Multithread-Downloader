@@ -222,30 +222,31 @@ public class Utils {
                 downloadFile.setIsPartialDownload(canPartialDownloading());
                 break;
             }
-            // Handle 407 - Proxy Authentication Required, but doesn't working
-            /**
-             * if (statusCode == HttpStatusCode.PROXY_AUTHENTICATION_REQUIRED.getCode()) {
-             * System.out.println(HttpStatusCode.PROXY_AUTHENTICATION_REQUIRED.getDesc());
-             * inputProxyUsernameAndPassword();
-             * 
-             * Authenticator.setDefault(new Authenticator() {
-             * 
-             * @Override protected PasswordAuthentication getPasswordAuthentication() {
-             *           String host = System.getProperty("http.proxyHost"); String port =
-             *           System.getProperty("http.proxyPort"); if
-             *           (getRequestingHost().equalsIgnoreCase(host)) { if
-             *           (Integer.parseInt(port) == getRequestingPort()) { return new
-             *           PasswordAuthentication(Config.getInstance().getProxyUsername(),
-             *           Config.getInstance().getProxyPassword().toCharArray()); } } return
-             *           null; } });
-             * 
-             *           System.setProperty("http.proxyUser",
-             *           Config.getInstance().getProxyUsername());
-             *           System.setProperty("http.proxyPassword",
-             *           Config.getInstance().getProxyPassword());
-             * 
-             *           continue; }
-             **/
+            if (statusCode == HttpStatusCode.PROXY_AUTHENTICATION_REQUIRED.getCode()) {
+                System.out.println(HttpStatusCode.PROXY_AUTHENTICATION_REQUIRED.getDesc());
+                inputProxyUsernameAndPassword();
+
+                Authenticator.setDefault(new Authenticator() {
+
+                    @Override
+                    protected PasswordAuthentication getPasswordAuthentication() {
+                        String host = System.getProperty("http.proxyHost");
+                        String port = System.getProperty("http.proxyPort");
+                        if (getRequestingHost().equalsIgnoreCase(host)) {
+                            if (Integer.parseInt(port) == getRequestingPort()) {
+                                return new PasswordAuthentication(Config.getInstance().getProxyUsername(),
+                                        Config.getInstance().getProxyPassword().toCharArray());
+                            }
+                        }
+                        return null;
+                    }
+                });
+
+                System.setProperty("http.proxyUser", Config.getInstance().getProxyUsername());
+                System.setProperty("http.proxyPassword", Config.getInstance().getProxyPassword());
+
+                continue;
+            }
             if (statusCode >= 400) {
                 throw new ApplicationException(
                         String.format("Error during get filename and file size! Response: %d - %s", statusCode,
@@ -263,8 +264,10 @@ public class Utils {
         if (optionalProxy.isPresent()) {
             Proxy proxy = optionalProxy.get();
             InetSocketAddress addr = (InetSocketAddress) proxy.address();
-            System.setProperty("http.proxyHost", addr.getHostName());
-            System.setProperty("http.proxyPort", String.valueOf(addr.getPort()));
+            if (Objects.nonNull(addr)) {
+                System.setProperty("http.proxyHost", addr.getHostName());
+                System.setProperty("http.proxyPort", String.valueOf(addr.getPort()));
+            }
         }
         System.setProperty("java.net.useSystemProxies", "false");
     }
