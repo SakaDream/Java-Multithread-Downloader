@@ -43,6 +43,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 
 /**
  * Utils
@@ -578,8 +579,15 @@ public class Utils {
 
     public static void copyFileLocationToClipboard(String downloadedPath) {
         StringSelection stringSelection = new StringSelection(downloadedPath);
-        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-        clipboard.setContents(stringSelection, null);
+        Clipboard clipboard = null;
+        if(SystemUtils.IS_OS_LINUX) {
+            clipboard = Toolkit.getDefaultToolkit().getSystemSelection();
+        } else {
+            clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        }
+        if(Objects.isNull(clipboard)) {
+            clipboard.setContents(stringSelection, null);
+        }
     }
 
     public static void showHelp() throws URISyntaxException {
