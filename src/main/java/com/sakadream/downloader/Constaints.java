@@ -22,6 +22,7 @@ public class Constaints {
     public static final String DEFAULT_DOWNLOAD_FOLDER = Paths.get(HOME_FOLDER, DOWNLOADS).toString();
     public static final Boolean DEFAULT_USE_SYSTEM_PROXY = false;
     public static final Boolean DEFAULT_CERTIFICATE_VALIDATION = true;
+    public static final Boolean DEFAULT_COPY_TO_CLIPBOARD = false;
 
     // start bytes / end bytes index
     public static final Integer START_BYTES_INDEX = 0;
@@ -38,6 +39,8 @@ public class Constaints {
     public static final String DISABLE_CERTIFICATE_VALIDATION_ARGUMENT_LONG = "--noValidateCertificate";
     public static final String HELP_ARGUMENT_SHORT = "-h";
     public static final String HELP_ARGUMENT_LONG = "--help";
+    public static final String COPY_TO_CLIPBOARD_SHORT = "-cc";
+    public static final String COPY_TO_CLIPBOARD_LONG = "--copy-to-clipboard";
 
     // Regex
     public static final String CONTENT_DISPOSITION_REGEX = "filename=(?:([\\x21-\\x7E&&[^\\Q()<>[]@,;:\\\"/?=\\E]]++)|\"((?:(?:(?:\r\n)?[\t ])+|[^\r\"\\\\]|\\\\[\\x00-\\x7f])*)\")";

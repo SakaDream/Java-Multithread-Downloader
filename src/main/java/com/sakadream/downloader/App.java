@@ -84,6 +84,10 @@ public class App {
                     System.out.println();
 
                     System.out.format("Download complete! File location: %s\n", result.getAbsolutePath());
+                    if(Config.getInstance().getCopyToClipboard()) {
+                        Utils.copyFileLocationToClipboard(result.getAbsolutePath());
+                        System.out.println("Copied downloaded file location to clipboard!");
+                    }
                     Timer timer = Timer.getInstance();
                     Long downloadDuration = timer.getDownloadCompletedTime() - timer.getStartTime();
                     System.out.format("Download time: %s\n", Utils.convertDurationInMilisToString(downloadDuration));

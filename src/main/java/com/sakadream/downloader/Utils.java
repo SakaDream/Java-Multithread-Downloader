@@ -1,5 +1,8 @@
 package com.sakadream.downloader;
 
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -103,6 +106,8 @@ public class Utils {
             case Constaints.USE_SYSTEM_PROXY_ARGUMENT_LONG:
             case Constaints.DISABLE_CERTIFICATE_VALIDATION_ARGUMENT_SHORT:
             case Constaints.DISABLE_CERTIFICATE_VALIDATION_ARGUMENT_LONG:
+            case Constaints.COPY_TO_CLIPBOARD_SHORT:
+            case Constaints.COPY_TO_CLIPBOARD_LONG:
                 break;
             default:
                 if (StringUtils.isEmpty(getUrl(args[i]))) {
@@ -134,6 +139,13 @@ public class Utils {
                 case Constaints.DISABLE_CERTIFICATE_VALIDATION_ARGUMENT_SHORT:
                 case Constaints.DISABLE_CERTIFICATE_VALIDATION_ARGUMENT_LONG:
                     config.setEnableCertificateValidation(false);
+                    break;
+                case Constaints.COPY_TO_CLIPBOARD_SHORT:
+                case Constaints.COPY_TO_CLIPBOARD_LONG:
+                    config.setCopyToClipboard(true);
+                    break;
+                default:
+                    break;
                 }
             }
         }
@@ -148,6 +160,9 @@ public class Utils {
         }
         if (Objects.isNull(config.getEnableCertificateValidation())) {
             config.setEnableCertificateValidation(Constaints.DEFAULT_CERTIFICATE_VALIDATION);
+        }
+        if (Objects.isNull(config.getCopyToClipboard())) {
+            config.setCopyToClipboard(Constaints.DEFAULT_COPY_TO_CLIPBOARD);
         }
         config.setUserAgent();
     }
@@ -561,6 +576,12 @@ public class Utils {
         }
     }
 
+    public static void copyFileLocationToClipboard(String downloadedPath) {
+        StringSelection stringSelection = new StringSelection(downloadedPath);
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        clipboard.setContents(stringSelection, null);
+    }
+
     public static void showHelp() throws URISyntaxException {
         System.out.println();
         System.out.println("Java Multithread Downloader");
@@ -593,6 +614,7 @@ public class Utils {
         System.out.println("-p, --useSystemProxy: Add this option to enable system proxy");
         System.out.println(
                 "-v, --noValidateCertificate: Add this option to turn off Cerfiticate Validation in https connection");
+        System.out.println("-cc, --copy-to-clipboard: Enable copy downloaded file location to clipboard");
         System.out.println("-h, --help: Show this help");
         System.exit(0);
     }

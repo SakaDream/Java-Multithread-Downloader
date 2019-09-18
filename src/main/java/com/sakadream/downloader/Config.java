@@ -17,6 +17,7 @@ public class Config {
     private String proxyUsername;
     private String proxyPassword;
     private Boolean enableCertificateValidation;
+    private Boolean copyToClipboard;
     private String userAgent;
 
     private static Config instance = null;
@@ -113,6 +114,20 @@ public class Config {
      */
     public void setEnableCertificateValidation(Boolean enableCertificateValidation) {
         this.enableCertificateValidation = enableCertificateValidation;
+    }
+
+    /**
+     * @return the copyToClipboard
+     */
+    public Boolean getCopyToClipboard() {
+        return copyToClipboard;
+    }
+
+    /**
+     * @param copyToClipboard the copyToClipboard to set
+     */
+    public void setCopyToClipboard(Boolean copyToClipboard) {
+        this.copyToClipboard = copyToClipboard;
     }
 
     /**
